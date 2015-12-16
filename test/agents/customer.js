@@ -771,4 +771,82 @@ describe("Customer", function() {
     });
 
   });
+
+  describe("swapSponsorship", function() {
+    it("halts if there is an error on extending a sponsorship", function(done) {
+      var Customer = new CustomerAgent('bill');
+      var customerMock = nock(Customer.host)
+        .put('/sponsorship/2', {
+          npm_user: 'bobby'
+        })
+        .reply(404);
+
+      Customer.swapSponsorship('bobby', 1, 2)
+        .then(function(body) {
+          expect(body).to.be.null();
+        })
+        .catch(function(err) {
+          expect(err).to.exist();
+        })
+        .finally(function() {
+          customerMock.done();
+          done();
+        });
+    });
+
+    it("extends, revokes, and accepts a sponsorship", function(done) {
+      var Customer = new CustomerAgent('bill');
+      var customerMock = nock(Customer.host)
+        .put('/sponsorship/2', {
+          npm_user: 'bobby'
+        })
+        .reply(200, {
+          verification_key: "1234aaabbb"
+        })
+        .delete('/sponsorship/1/bobby')
+        .reply(200)
+        .post('/sponsorship/1234aaabbb')
+        .reply(200);
+
+      Customer.swapSponsorship('bobby', 1, 2)
+        .then(function(body) {
+          expect(body).to.not.be.null();
+        })
+        .catch(function(err) {
+          expect(err).to.not.exist();
+        })
+        .finally(function() {
+          customerMock.done();
+          done();
+        });
+    });
+
+    it("does not error if a user is already sponsored", function(done) {
+      var Customer = new CustomerAgent('bill');
+      var customerMock = nock(Customer.host)
+        .put('/sponsorship/2', {
+          npm_user: 'bobby'
+        })
+        .reply(200, {
+          verification_key: "1234aaabbb"
+        })
+        .delete('/sponsorship/1/bobby')
+        .reply(200)
+        .post('/sponsorship/1234aaabbb')
+        .reply(409);
+
+      Customer.swapSponsorship('bobby', 1, 2)
+        .then(function(body) {
+          expect(body).to.not.be.null();
+        })
+        .catch(function(err) {
+          expect(err).to.not.exist();
+        })
+        .finally(function() {
+          customerMock.done();
+          done();
+        });
+    });
+
+  });
 });
