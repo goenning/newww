@@ -3,6 +3,7 @@ var P = require('bluebird');
 var validate = require('validate-npm-package-name');
 var npa = require('npm-package-arg');
 var PackageAgent = require("../agents/package");
+var CMS = require("../agents/cms");
 var feature = require('../lib/feature-flags');
 
 var DEPENDENCY_TTL = 5 * 60; // 5 minutes
@@ -28,11 +29,14 @@ exports.show = function(request, reply) {
       limit: 50
     }, DEPENDENCY_TTL),
     feature('npmo') ? null : Download.getAll(name),
-  ]).spread(function(pkg, dependents, downloads) {
+    CMS.getPromotion(['random-tag'])
+  ]).spread(function(pkg, dependents, downloads, promotion) {
     pkg.dependents = dependents;
     if (pkg.name[0] != '@') {
       pkg.downloads = downloads;
     }
+
+    context.promotion = promotion;
 
     if (pkg && pkg.time && pkg.time.unpublished) {
       request.logger.info('package is unpublished: ' + name);
