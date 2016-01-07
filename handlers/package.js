@@ -5,6 +5,7 @@ var npa = require('npm-package-arg');
 var PackageAgent = require("../agents/package");
 var CMS = require("../agents/cms");
 var feature = require('../lib/feature-flags');
+var userfacts = require('../lib/user-facts');
 
 var DEPENDENCY_TTL = 5 * 60; // 5 minutes
 
@@ -21,15 +22,15 @@ exports.show = function(request, reply) {
 
   request.logger.info('get package: ' + name);
 
-  P.all([
+  P.join(
     Package.get(name),
     Package.list({
       dependency: name,
       limit: 50
     }, DEPENDENCY_TTL),
     feature('npmo') ? null : Download.getAll(name),
-    CMS.getPromotion(['default'])
-  ]).spread(function(pkg, dependents, downloads, promotion) {
+    userfacts.getFactsForRequest(request).then(CMS.getPromotion)
+  ).spread(function(pkg, dependents, downloads, promotion) {
     pkg.dependents = dependents;
     if (pkg.name[0] != '@') {
       pkg.downloads = downloads;
