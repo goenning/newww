@@ -16,6 +16,9 @@ var fixtures = require("../fixtures"),
   server,
   cms_api;
 
+var requireInject = require('require-inject');
+var redisMock = require('redis-mock');
+
 before(function(done) {
   cms_api = process.env.CMS_API;
   process.env.CMS_API = 'http://cms-api/npm/v1/';
@@ -30,7 +33,9 @@ after(function(done) {
 describe("package handler", function() {
 
   before(function(done) {
-    require('../mocks/server')(function(obj) {
+    requireInject.installGlobally('../mocks/server', {
+      redis: redisMock
+    })(function(obj) {
       server = obj;
       done();
     }, require('../../lib/error-handler'));
