@@ -64,6 +64,11 @@ exports.register = function(server, options, next) {
 
   server.ext('onPostHandler', function(request, reply) {
 
+    var user = UserModel.new(request);
+    user.incrPagesSeenThisSession(request.loggedInUser).catch(function(err) {
+      request.logger.error(err);
+    });
+
     var latency = Date.now() - request.timing.start;
     metrics.metric({
       name: 'latency.page',

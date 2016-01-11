@@ -34,21 +34,21 @@ var userMock, licenseMock;
 
 before(function(done) {
   userMock = nock("https://user-api-example.com")
-    .get('/user/bob').times(8)
+    .get('/user/bob').times(9)
     .reply(200, fixtures.users.bob)
     .get('/user/seldo').times(3)
     .reply(200, fixtures.users.npmEmployee)
-    .get('/user/bob/package?format=mini&per_page=100&page=0').times(10)
+    .get('/user/bob/package?format=mini&per_page=100&page=0').times(11)
     .reply(200, fixtures.users.packages)
-    .get('/user/bob/stars?format=detailed').times(10)
+    .get('/user/bob/stars?format=detailed').times(11)
     .reply(200, fixtures.users.stars)
-    .get('/user/bob').times(5)
+    .get('/user/bob').times(6)
     .reply(404)
     .get('/user/seldo')
     .reply(404)
     .get('/user/mikeal')
     .reply(404)
-    .get('/user/bob/org').times(2)
+    .get('/user/bob/org').times(3)
     .reply(401)
     .get('/package?sort=modified&count=12')
     .reply(200, fixtures.aggregates.recently_updated_packages)
@@ -173,6 +173,25 @@ describe("bonbon", function() {
       });
     });
 
+  });
+
+  it('tracks pages viewed per session', function(done) {
+    var options = {
+      url: '/~bob',
+      credentials: fixtures.users.bob
+    };
+
+    server.inject(options, function(resp) {
+      redisMock.createClient().get(`pagesSeenThisSession:${resp.request.loggedInUser.sid}`, function(err, val) {
+        try {
+          expect(err).to.not.exist();
+          expect(val).to.equal(1);
+          done();
+        } catch (e) {
+          done();
+        }
+      });
+    });
   });
 
   it('allows logged-in npm employees to request the view context with a `json` query param', function(done) {
