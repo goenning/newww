@@ -13,6 +13,11 @@ var Code = require('code'),
   cache = require("../../lib/cache"),
   fixtures = require('../fixtures');
 
+var P = require('bluebird');
+
+var UserClient = require('../../models/user');
+var redisPool = require('../../lib/redis-pool');
+
 var User, spy;
 
 beforeEach(function(done) {
@@ -975,6 +980,28 @@ describe("User", function() {
           userMock.done();
           done();
         });
+    });
+  });
+
+  describe('page view tracking', function() {
+    before(done => redisPool.acquireAsync().then(redis => redis.del('pagesSeenThisSession:test')).then(x => done(), done));
+
+    it('increments the token when given a user object with an sid', function(done) {
+      P.join(new UserClient({}).incrPagesSeenThisSession({
+        sid: 'test'
+      }), redisPool.acquireAsync()).spread(function(incr, redis) {
+        return redis.getAsync('pagesSeenThisSession:test').then(pages => {
+          expect(Number(pages)).to.equal(1);
+        })
+      }).then(done, done);
+    });
+
+    it('fetches that number', function(done) {
+      new UserClient({}).getPagesSeenThisSession({
+        sid: 'test'
+      }).then(function(pages) {
+        expect(Number(pages)).to.equal(1)
+      }).then(done, done);
     });
   });
 });
