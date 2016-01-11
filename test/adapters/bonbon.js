@@ -25,15 +25,15 @@ var userMock, licenseMock;
 
 before(function(done) {
   userMock = nock("https://user-api-example.com")
-    .get('/user/bob').times(8)
+    .get('/user/bob').times(9)
     .reply(200, fixtures.users.bob)
     .get('/user/seldo').times(3)
     .reply(200, fixtures.users.npmEmployee)
     .get('/user/constructor')
     .reply(200, fixtures.users.propName)
-    .get('/user/bob/package?format=mini&per_page=100&page=0').times(10)
+    .get('/user/bob/package?format=mini&per_page=100&page=0').times(11)
     .reply(200, fixtures.users.packages)
-    .get('/user/bob/stars?format=detailed').times(10)
+    .get('/user/bob/stars?format=detailed').times(11)
     .reply(200, fixtures.users.stars)
     .get('/user/bob').times(5)
     .reply(404)
