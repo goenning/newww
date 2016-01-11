@@ -14,11 +14,20 @@ var Code = require('code'),
 var server;
 var username1 = 'bob';
 
+var requireInject = require('require-inject');
+var redisMock = require('redis-mock');
+
 beforeEach(function(done) {
-  require('../mocks/server')(function(obj) {
+  requireInject.installGlobally('../mocks/server', {
+    redis: redisMock
+  })(function(obj) {
     server = obj;
     done();
   });
+});
+
+afterEach(function(done) {
+  redisMock.createClient().flushall(done);
 });
 
 var userMock, licenseMock;
