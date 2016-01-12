@@ -30,10 +30,9 @@ afterEach(function(done) {
   redisMock.createClient().flushall(done);
 });
 
-var userMock, licenseMock;
 
-before(function(done) {
-  userMock = nock("https://user-api-example.com")
+describe("bonbon", function() {
+  var userMock = nock("https://user-api-example.com")
     .get('/user/bob').times(9)
     .reply(200, fixtures.users.bob)
     .get('/user/seldo').times(3)
@@ -55,7 +54,7 @@ before(function(done) {
     .get('/package?sort=dependents&count=12')
     .reply(200, fixtures.aggregates.most_depended_upon_packages);
 
-  licenseMock = nock('https://license-api-example.com')
+  var licenseMock = nock('https://license-api-example.com')
     .get('/customer/bob/stripe').times(13)
     .reply(200, {})
     .get('/customer/mikeal/stripe')
@@ -63,16 +62,11 @@ before(function(done) {
     .get('/customer/seldo/stripe').times(4)
     .reply(200, {});
 
-  done();
-});
-
-after(function(done) {
-  userMock.done();
-  licenseMock.done();
-  done();
-});
-
-describe("bonbon", function() {
+  after(function(done) {
+    userMock.done();
+    licenseMock.done();
+    done();
+  });
 
   beforeEach(function(done) {
     process.env.NODE_ENV = 'production';
