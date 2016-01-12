@@ -17,7 +17,7 @@ var username1 = 'bob';
 var requireInject = require('require-inject');
 var redisMock = require('redis-mock');
 
-beforeEach(function(done) {
+before(function(done) {
   requireInject.installGlobally('../mocks/server', {
     redis: redisMock
   })(function(obj) {
