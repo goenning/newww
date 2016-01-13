@@ -8,36 +8,21 @@ var Code = require('code'),
   expect = Code.expect,
   redis = require('redis'),
   spawn = require('child_process').spawn,
-  redisSessions = require('../../adapters/redis-sessions'),
-  redisProcess;
-
-before(function(done) {
-  redisProcess = spawn('redis-server');
-  done();
-});
-
-after(function(done) {
-  redisProcess.kill('SIGKILL');
-  done();
-});
+  requireInject = require('require-inject'),
+  redisMock = require('redis-mock'),
+  redisSessions = requireInject('../../adapters/redis-sessions', {
+    redis: redisMock
+  });
 
 describe('redis-requiring session stuff', function() {
-  var client;
   var bob1, bob2, alice1;
   var bobHash, aliceHash;
   var prefix = "hapi-cache:%7Csessions:";
 
-  before(function(done) {
-    client = require("redis").createClient();
-    client.flushdb();
-    client.on("error", function(err) {
-      console.log("Error " + err);
-    });
-    done();
-  });
+  var client = redisMock.createClient();
 
   after('cleans up the db', function(done) {
-    client.flushdb(done);
+    redisMock.createClient().flushdb(done);
   });
 
   it('creates a random hash for each user', function(done) {
