@@ -67,15 +67,10 @@ describe("package handler", function() {
         .get('/point/last-month/browserify')
         .reply(200, fixtures.downloads.browserify.month);
 
-      var promosMock = nock("http://cms-api")
-        .get("/npm/v1/promotions").query(true)
-        .reply(200, fixtures.cms.promotion);
-
       server.inject(options, function(response) {
         resp = response;
         $ = cheerio.load(resp.result);
         try {
-          promosMock.done();
           packageMock.done();
           downloadsMock.done();
           done();
