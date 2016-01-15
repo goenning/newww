@@ -198,5 +198,10 @@ module.exports = [
     path: "/org/{org}/team/{teamName}/add-package",
     method: "GET",
     handler: require('../handlers/team').getAddTeamPackagePage
+  }, {
+    path: "/cms/notice/{location}/{id}",
+    method: "POST",
+    handler: require('../handlers/cms').dismissNotice
   }
+
 ];

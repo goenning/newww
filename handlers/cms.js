@@ -1,4 +1,5 @@
 var CMS = require('../agents/cms');
+var UserAgent = require('../models/user');
 
 module.exports = {
   displayCMSPage: function(request, reply) {
@@ -16,5 +17,23 @@ module.exports = {
         return reply(err);
       }
     });
+  },
+
+  dismissNotice: function(request, reply) {
+
+    var agent = UserAgent.new(request);
+
+    agent.get(request.loggedInUser.name).then(user => {
+      user.resource.dismiss = '';
+      agent.save();
+      if (request.query.returnURL) {
+        reply.redirect(validate(request.query.returnURL));
+      } else {
+        reply({ });
+      }
+    }).catch(reply);
   }
+
 }
+
+
